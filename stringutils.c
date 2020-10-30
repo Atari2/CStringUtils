@@ -2,7 +2,8 @@
 
 typedef enum Errors {
     NullPtrError = 0,
-    EmptySeparator = 1
+    EmptySeparator = 1,
+    InvalidSubstringIndex = 2
 } Errors;
 
 #define MAX_STRINGS 1000
@@ -121,6 +122,7 @@ str strncopy(str orig, ll n) {
     structs.strings[structs.contains] = ptr;
     structs.contains++;
     strncpy(ptr, orig, n+1);
+    ptr[n] = '\0';
     return ptr;
 }
 str strcopy(str orig) {
@@ -478,6 +480,32 @@ str replacec(str orig, char needle, char rep) {
             ptr[i] = rep;
     }
     return ptr;
+}
+
+str substr(str orig, int start, int end) {
+    int len = strlen(orig);
+    if (start > len || end > len || start < -1 || end < -1) {
+        printf("Substring received invalid range %d:%d", start, end);
+        exit(InvalidSubstringIndex);
+    }
+    if (start == -1 && end == -1)
+        return strcopy(orig);
+
+    if (start > -1 && end == -1)
+        return strcopy(orig+start);
+
+    if (start == -1 && end > -1)
+        return strncopy(orig, end);
+
+    if ((end-start) > len || end < start) {
+        printf("Substring received invalid range %d:%d", start, end);
+        exit(InvalidSubstringIndex);
+    }
+
+    if (end == start)
+        return strcopy("");
+
+    return strncopy(orig+start, end-start);
 }
 
 void** safe_alloc_generic(size_t size, size_t count) {

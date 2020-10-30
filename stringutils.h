@@ -406,6 +406,20 @@ char* replace(char* orig, char* needle, char* rep);
  */
 char* replacec(char* orig, char needle, char rep);
 
+/**
+ * @brief Returns a new string which is a substring of original, equivalent to [start:end] in Python.
+ * If end is -1, it'll be equivalent to  [start:].
+ * If start is -1, it'll be equivalent to [:end].
+ * If both are -1, it'll return a copy of the original string.
+ * <br> substr("hello world", 0, 4) -> "hello"
+ * <br> substr("hello world", 4, -1) -> "o world"
+ * @param orig (the string to grab the substring from)
+ * @param start (starting index, -1 to be from start always)
+ * @param end (ending index, -1 to go to end always)
+ * @return substring of given range
+ */
+char* substr(char* orig, int start, int end);
+
 // allocation utility functions
 /**
  * @brief Allocates a generic void** pointer of size*count bytes. Size and count are given by the user.
