@@ -226,7 +226,7 @@ str sum(str first, str second) {
         printf("NULL pointer was trying to be added\n");
         exit(NullPtrError);
     }
-    str ptr = malloc(strlen(first) + strlen(second) + 1);
+    str ptr = alloc_safe_str(strlen(first) + strlen(second));
     strncpy(ptr, first, strlen(first)+1);
     strcat(ptr, second);
     return ptr;
@@ -249,7 +249,7 @@ str append(str first, char second) {
         printf("NULL pointer was trying to be added\n");
         exit(NullPtrError);
     }
-    str ptr = malloc(strlen(first)+2);
+    str ptr = alloc_safe_str(strlen(first)+1);
     strncpy(ptr, first, strlen(first)+1);
     uint n = strlen(ptr);
     ptr[n] = second;
