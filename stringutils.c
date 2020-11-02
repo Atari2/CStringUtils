@@ -1,12 +1,9 @@
 #include "stringutils.h"
 
-typedef enum Errors {
-    NullPtrError = 0,
-    EmptySeparator = 1,
-    InvalidSubstringIndex = 2
-} Errors;
-
 #define MAX_STRINGS 1000
+#ifndef SIGUSR1
+#define SIGUSR1 SIGTERM     // For some reason Windows doesn't let you use user defined errors.
+#endif
 #define MAX_VECT 500
 #define str char*
 #define vstr char**
@@ -18,6 +15,8 @@ typedef enum Errors {
 
 alloced_strings structs = { NULL, 0, MAX_STRINGS};
 alloced_vects vstructs = { NULL, 0, MAX_VECT};
+int SIGNAL_USR = 0;
+StringUtilsTraceLvl TRACE_LVL = NoTrace;
 
 #ifdef __GNUC__             // __attribute__((constructor)) is only present in GCC, therefore we need to check this.
     #ifndef __clang__
@@ -28,6 +27,20 @@ void init(void) {
 }
     #endif
 #endif
+
+void handle_err(StringUtilsErrors error_type, const char *_Format, ...) {
+    va_list args;
+    va_start(args, _Format);
+    if (!SIGNAL_USR) {
+        printf(_Format, args);
+        exit(error_type);
+    }
+    else {
+        if (TRACE_LVL != NoTrace)
+            fprintf(stderr,"[Warn: triggered exception handled by the user] Err: %s\n", errcodetostr(error_type));
+        raise(SIGUSR1);
+    }
+}
 
 str trim(str string) {
     return trimnchar(string, "\t\r\n ");
@@ -118,8 +131,7 @@ str trimstartstr(str string, str needle) {
 }
 str strncopy(str orig, ll n) {
     if (orig == NULL) {
-        printf("NULL pointer was trying to be copied\n");
-        exit(NullPtrError);
+        handle_err(NullPtrError, "NULL pointer was trying to be copied\n");
     }
     if (structs.contains == 0) {
         structs.strings = malloc(sizeof(vstr)*structs.max_size);
@@ -137,8 +149,7 @@ str strncopy(str orig, ll n) {
 }
 str strcopy(str orig) {
     if (orig == NULL) {
-        printf("NULL pointer was trying to be copied\n");
-        exit(NullPtrError);
+        handle_err(NullPtrError, "NULL pointer was trying to be copied\n");
     }
     return strncopy(orig, strlen(orig));
 }
@@ -233,8 +244,7 @@ int containsc(str haystack, char needle) {
 }
 str sum(str first, str second) {
     if (first == NULL || second == NULL) {
-        printf("NULL pointer was trying to be added\n");
-        exit(NullPtrError);
+        handle_err(NullPtrError, "NULL pointer was trying to be added\n");
     }
     str ptr = alloc_safe_str(strlen(first) + strlen(second));
     strncpy(ptr, first, strlen(first)+1);
@@ -256,8 +266,7 @@ str sub(str haystack, char needle) {
 
 str append(str first, char second) {
     if (first == NULL) {
-        printf("NULL pointer was trying to be added\n");
-        exit(NullPtrError);
+        handle_err(NullPtrError, "NULL pointer was trying to be added\n");
     }
     str ptr = alloc_safe_str(strlen(first)+1);
     strncpy(ptr, first, strlen(first)+1);
@@ -361,8 +370,7 @@ vstr splitc(str string, char c, tp(int, size)) {
 }
 vstr splitnc(str string, str params, tp(int, size)) {
     if (strlen(params) == 0) {
-        printf("Split attempt with empty separator\n");
-        exit(EmptySeparator);
+        handle_err(EmptySeparator, "Split attempt with empty separator\n");
     }
     int n = countnc(string, params) + 1;
     if (n == 0)
@@ -394,8 +402,7 @@ vstr splitnc(str string, str params, tp(int, size)) {
 }
 vstr splitstr(str string, str needle, tp(int, size)) {
     if (strlen(needle) == 0) {
-        printf("Split attempt with empty separator\n");
-        exit(EmptySeparator);
+        handle_err(EmptySeparator, "Split attempt with empty separator\n");
     }
     int n = countstr(string, needle)+1;
     int l = strlen(needle);
@@ -495,8 +502,7 @@ str replacec(str orig, char needle, char rep) {
 str substr(str orig, int start, int end) {
     int len = strlen(orig);
     if (start > len || end > len || start < -1 || end < -1) {
-        printf("Substring received invalid range %d:%d", start, end);
-        exit(InvalidSubstringIndex);
+        handle_err(InvalidSubstringIndex, "Substring received invalid range %d:%d", start, end);
     }
     if (start == -1 && end == -1)
         return strcopy(orig);
@@ -508,8 +514,7 @@ str substr(str orig, int start, int end) {
         return strncopy(orig, end);
 
     if ((end-start) > len || end < start) {
-        printf("Substring received invalid range %d:%d", start, end);
-        exit(InvalidSubstringIndex);
+        handle_err(InvalidSubstringIndex, "Substring received invalid range %d:%d", start, end);
     }
 
     if (end == start)
@@ -521,8 +526,7 @@ str substr(str orig, int start, int end) {
 void** safe_alloc_generic(size_t size, size_t count) {
     void** ptr = calloc(size, count);
     if (ptr == NULL) {
-        printf("Memory %lu bytes couldn't be alloc'd\n", (ulint)(size*count));
-        exit(NullPtrError);
+        handle_err(NullPtrError, "Memory %lu bytes couldn't be alloc'd\n", (ulint)(size*count));
     }
     return ptr;
 }
@@ -530,8 +534,7 @@ void** safe_alloc_generic(size_t size, size_t count) {
 str alloc_safe_str(size_t size) {
     str ptr = malloc(size+1);
     if (ptr == NULL) {
-        printf("Memory %lu bytes couldn't be alloc'd\n", (ulint)(size));
-        exit(NullPtrError);
+        handle_err(NullPtrError, "Memory %lu bytes couldn't be alloc'd\n", (ulint)(size));
     }
     if (structs.contains == 0) {
         structs.strings = malloc(sizeof(vstr)*structs.max_size);
@@ -574,6 +577,33 @@ void user_init(ll max_strings, ll max_vect) {
     structs.max_size = max_strings;
     vstructs.max_size = max_vect;
 }
+
+void override_signal_exception(void (*func)(int)) {
+    SIGNAL_USR = 1;
+    void* ret = signal(SIGUSR1, func);
+    if (ret == SIG_ERR) {
+        printf("Error in assignment of custom signal handler");
+        exit(SignalHandlerError);
+    }
+}
+
+void set_trace_lvl(StringUtilsTraceLvl trace_lvl) {
+    TRACE_LVL = trace_lvl;
+}
+
+char* errcodetostr(StringUtilsErrors err) {
+    switch (err) {
+        case NullPtrError:
+            return "NullPtrError";
+        case EmptySeparator:
+            return "EmptySeparator";
+        case InvalidSubstringIndex:
+            return "InvalidSubStringIndex";
+        case SignalHandlerError:
+            return "SignalHandlerError";
+    }
+}
+
 #undef str 
 #undef uint
 #undef ulint

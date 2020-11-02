@@ -13,6 +13,29 @@
 #include <string.h>
 #include <ctype.h>
 #include <fcntl.h>
+#include <signal.h>
+#include <stdarg.h>
+
+/**
+ * @brief All the errors defined in this library
+ */
+typedef enum StringUtilsErrors {
+    NullPtrError = 0,
+    EmptySeparator = 1,
+    InvalidSubstringIndex = 2,
+    SignalHandlerError = 3
+} StringUtilsErrors;
+
+
+/**
+ * @brief The types of tracing available in this library
+ * <br> NoTrace is completely silent execution
+ * <br> Warn warns on errors (if custom error handler is present, it kills the program otherwise)
+ */
+typedef enum StringUtilsTraceLvl {
+    NoTrace = 0,
+    Warn = 1
+} StringUtilsTraceLvl;
 
 /**
  * This is the internal structure that holds all references to any string that gets allocated within this library.
@@ -467,7 +490,7 @@ alloced_strings* expose_internal_strings();
 alloced_vects* expose_internal_vectors();
 
 /**
- * This is a function that (if needed) <b>has</b> to be called at the start of the program execution (or before any function of this library gets called).
+ * @brief This is a function that (if needed) <b>has</b> to be called at the start of the program execution (or before any function of this library gets called).
  * The purpose of this function is to override the default starting sizes of the structs that hold the refs.
  * <br> user_init(200, 10) -> will set size of alloced_strings to 200 and of alloced_vects to 10
  * @see alloced_strings
@@ -476,4 +499,34 @@ alloced_vects* expose_internal_vectors();
  * @param max_vectors (the new starting size for the vects struct, default is 500)
  */
 void user_init(long long max_strings, long long max_vectors);
+
+/**
+ * @brief This function's only purpose is to receive another function to handle any exceptions thrown by this library.
+ * <br> Defined exceptions can be found in StringUtilsErrors
+ * <br> func's prototype should be a void return with a single int argument
+ * <br> In POSIX systems, exceptions triggered by this library will be SIGUSR1, on Windows however, it'll trigger SIGTERM, so be aware.
+ * <br> If the trace level is on Warn, it'll also print some information, otherwise it'll be silent and just raise.
+ * <br> The trace level can be set with set_trace_lvl()
+ * @param func (the function to call)
+ * @see StringUtilsErrors
+ * @see StringUtilsTraceLvl
+ * @see set_trace_lvl()
+ */
+void override_signal_exception(void (*func)(int));
+
+/**
+ * @brief This function must be called in order to modify the trace level of the library.
+ * <br> By default it's set to NoTrace
+ * @param trace_lvl (trace level to set, valid values are only NoTrace or Warn)
+ * @see StringUtilsTraceLvl
+ */
+void set_trace_lvl(StringUtilsTraceLvl trace_lvl);
+
+/**
+ * @brief This function translates a StringUtilsErrors code into the appropriate message.
+ * @param err (StringUtilsErrors values)
+ * @return string (message)
+ * @see StringUtilsErrors
+ */
+char* errcodetostr(StringUtilsErrors err);
 #endif //UTILS_STRINGUTILS_H
