@@ -347,15 +347,15 @@ vstr splitc(str string, char c, tp(int, size)) {
     int b = a + findc(string+a+1, c);
     int i = 1;
     while (a != -1 && b != -1 && i < p(size)) {
+        if ((a-1) >= b) {
+            vect[i] = strncopy(string + a + 1, strlen(string) - a);
+            break;
+        }
         vect[i] = strncopy(string+a+1, b-a);
         vect[i][b-a] = '\0';
         i++;
         a = b+1;
         b = a + findc(string+a+1, c);
-        if ((a-1) >= b) {
-            vect[i] = strncopy(string + a + 1, strlen(string) - a);
-            break;
-        }
     }
     return vect;
 }
@@ -379,15 +379,15 @@ vstr splitnc(str string, str params, tp(int, size)) {
     int b = a + findnc(string+a+1, params);
     int i = 1;
     while (a != -1 && b != -1 && i < n) {
+        if ((a-1) >= b) {
+            vect[i] = strncopy(string + a + 1, strlen(string) - a);
+            break;
+        }
         vect[i] = strncopy(string+a+1, b-a);
         vect[i][b-a] = '\0';
         i++;
         a = b+1;
         b = a + findnc(string+a+1, params);
-        if ((a-1) >= b) {
-            vect[i] = strncopy(string + a + 1, strlen(string) - a);
-            break;
-        }
     }
     p(size) = n;
     return vect;
@@ -418,15 +418,15 @@ vstr splitstr(str string, str needle, tp(int, size)) {
     }
     int i = 1;
     while (a != -1 && b != -1 && i < n) {
+        if ((a-1) >= b) {
+            vect[i] = strncopy(string + a + l, strlen(string) - a - l);
+            break;
+        }
         vect[i] = strncopy(string+a+l, b-a);
         vect[i][b-a] = '\0';
         i++;
         a = b+l;
         b = a + find(string+a+l, needle);
-        if ((a-1) >= b) {
-            vect[i] = strncopy(string + a + l, strlen(string) - a - l);
-            break;
-        }
     }
     p(size) = n;
     return vect;
