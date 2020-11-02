@@ -19,6 +19,16 @@ typedef enum Errors {
 alloced_strings structs = { NULL, 0, MAX_STRINGS};
 alloced_vects vstructs = { NULL, 0, MAX_VECT};
 
+#ifdef __GNUC__             // __attribute__((constructor)) is only present in GCC, therefore we need to check this.
+    #ifndef __clang__
+void init(void) __attribute__((constructor));
+
+void init(void) {
+    atexit(free_all_structures);
+}
+    #endif
+#endif
+
 str trim(str string) {
     return trimnchar(string, "\t\r\n ");
 }
@@ -544,14 +554,20 @@ alloced_vects* expose_internal_vectors() {
 }
 
 void free_all_structures() {
-    for (ll i = 0; i < structs.contains; i++) {
-        free(structs.strings[i]);
+    if (structs.contains > 0) {
+        for (ll i = 0; i < structs.contains; i++) {
+            free(structs.strings[i]);
+        }
+        free(structs.strings);
+        structs.contains = 0;
     }
-    for (ll i = 0; i < vstructs.contains; i++) {
-        free(vstructs.vectors[i]);
+    if (vstructs.contains > 0) {
+        for (ll i = 0; i < vstructs.contains; i++) {
+            free(vstructs.vectors[i]);
+        }
+        free(vstructs.vectors);
+        vstructs.contains = 0;
     }
-    free(structs.strings);
-    free(vstructs.vectors);
 }
 
 void user_init(ll max_strings, ll max_vect) {

@@ -446,6 +446,8 @@ char* alloc_safe_str(size_t size);
 /**
  * @brief This functions frees each and every string/every list of strings allocated by any function of this header.
  * <br> This is to facilitate memory management, since you just need to call this function at the end of whatever you want.
+ * <br> Please do note that if this was compiled with GCC this function will be called automatically at program exit if possible.
+ * <br> So make sure to know what you're doing if you call this manually!
  */
 void free_all_structures();
 
