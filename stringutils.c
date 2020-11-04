@@ -32,7 +32,7 @@ void handle_err(StringUtilsErrors error_type, const char *_Format, ...) {
     va_list args;
     va_start(args, _Format);
     if (!SIGNAL_USR) {
-        printf(_Format, args);
+        vprintf(_Format, args);
         exit(error_type);
     }
     else {
@@ -40,6 +40,7 @@ void handle_err(StringUtilsErrors error_type, const char *_Format, ...) {
             fprintf(stderr,"[Warn: triggered exception handled by the user] Err: %s\n", errcodetostr(error_type));
         raise(SIGUSR1);
     }
+    va_end(args);
 }
 
 str trim(str string) {
