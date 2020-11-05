@@ -9,8 +9,9 @@ Example usage:
 ```c
 #include "stringutils.h"
 
-void custom_handler(int err) {
-    printf("Basically this just ignore thrown exceptions\n");
+void custom_handler(int _) {
+    (void)_;            // To prevent annoying [unused variable] warnings.
+    printf("Basically this just ignores thrown exceptions\n");
     return;
 }
 
