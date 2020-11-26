@@ -16,8 +16,8 @@ void custom_handler(int _) {
 }
 
 int main() {
-    set_trace_lvl(Warn);                            // We set the trace level
-    override_signal_exception(custom_handler);      // Let's add a custom error handler, why not
+    set_trace_lvl_stringutils(Warn);                            // We set the trace level
+    override_signal_exception_stringutils(custom_handler);      // Let's add a custom error handler, why not
     user_init(10, 5);                               // Let's also reduce the memory footprint (not required)
     char* orig  = "testneedletest";
     char* c = trimstr(orig, "test");                // Trim, sum and append

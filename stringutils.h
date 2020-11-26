@@ -55,13 +55,13 @@ typedef struct alloced_strings {
 /**
  * This is the internal structure that holds all references to any list of strings that gets allocated within this library
  * Be aware that any of the refs of each string in each list is held within alloced_strings.
- * So if you manually free anything from here, you don't have to free each string ref because those will get cleaned up by free_all_structures_stringutils().
+ * So if you manually free anything from here, you don't have to free each string ref because those will get cleaned up by free_all_stringutil_structuress().
  * By default it starts out with max_size of 500, you can override this by calling user_init() at the start of the program
  * It will auto expand as needed, doubling its size every time to avoid O(n) spent allocating when limit is reached.
  * @param vectors: the list of refs to all the allocated lists of strings
  * @param contains: the current number of refs contained
  * @param max_size: the current max_size that the struct will hold
- * @see free_all_structures_stringutils()
+ * @see free_all_stringutils_structures()
  * @see user_init()
  */
 typedef struct alloced_vects {
@@ -447,19 +447,19 @@ char* substr(char* orig, int start, int end);
 /**
  * @brief Allocates a generic void** pointer of size*count bytes. Size and count are given by the user.
  * <br>void** ptr = safe_alloc_generic(10, 2)
- * @warning <b>THIS DOES NOT GET FREED by free_all_structures_stringutils(), it's up to the caller to free this memory</b>
+ * @warning <b>THIS DOES NOT GET FREED by free_all_stringutils_structures(), it's up to the caller to free this memory</b>
  * @param size
  * @param count
  * @return an allocated void** pointer of given size and count
- * @see free_all_structures_stringutils()
+ * @see free_all_stringutils_structures()
  */
 void** safe_alloc_generic(size_t size, size_t count);
 
 /**
  * @brief Allocates a generic char* pointer of given size (size DOESN'T NEED to account for string terminator)
- * <br> This DOES get freed by free_all_structures_stringutils(), so you don't need to manually free this memory if you call it
+ * <br> This DOES get freed by free_all_stringutils_structures(), so you don't need to manually free this memory if you call it
  * <br> char* str = alloc_safe_str(strlen("this is a test"))
- * @see free_all_structures_stringutils()
+ * @see free_all_stringutils_structures()
  * @param size
  * @return allocated char* pointer
  */
