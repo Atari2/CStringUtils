@@ -15,7 +15,7 @@
 
 alloced_strings structs = { NULL, 0, MAX_STRINGS};
 alloced_vects vstructs = { NULL, 0, MAX_VECT};
-int SIGNAL_USR = 0;
+int SIGNAL_USR_StringUtils = 0;
 StringUtilsTraceLvl TRACE_LVL = NoTrace;
 
 #ifdef __GNUC__             // __attribute__((constructor)) is only present in GCC, therefore we need to check this.
@@ -31,13 +31,13 @@ void init(void) {
 void handle_err(StringUtilsErrors error_type, const char *_Format, ...) {
     va_list args;
     va_start(args, _Format);
-    if (!SIGNAL_USR) {
+    if (!SIGNAL_USR_StringUtils) {
         vprintf(_Format, args);
         exit(error_type);
     }
     else {
         if (TRACE_LVL != NoTrace)
-            fprintf(stderr,"[Warn: triggered exception handled by the user] Err: %s\n", errcodetostr(error_type));
+            fprintf(stderr,"[Warn: triggered exception handled by the user] Err: %s\n", errcodetostr_stringutils(error_type));
         raise(SIGUSR1);
     }
     va_end(args);
@@ -579,8 +579,8 @@ void user_init(ll max_strings, ll max_vect) {
     vstructs.max_size = max_vect;
 }
 
-void override_signal_exception(void (*func)(int)) {
-    SIGNAL_USR = 1;
+void override_signal_exception_stringutils(void (*func)(int)) {
+    SIGNAL_USR_StringUtils = 1;
     void* ret = signal(SIGUSR1, func);
     if (ret == SIG_ERR) {
         printf("Error in assignment of custom signal handler");
@@ -588,11 +588,11 @@ void override_signal_exception(void (*func)(int)) {
     }
 }
 
-void set_trace_lvl(StringUtilsTraceLvl trace_lvl) {
+void set_trace_lvl_stringutils(StringUtilsTraceLvl trace_lvl) {
     TRACE_LVL = trace_lvl;
 }
 
-char* errcodetostr(StringUtilsErrors err) {
+char* errcodetostr_stringutils(StringUtilsErrors err) {
     switch (err) {
         case NullPtrError:
             return "NullPtrError";

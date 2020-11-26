@@ -55,13 +55,13 @@ typedef struct alloced_strings {
 /**
  * This is the internal structure that holds all references to any list of strings that gets allocated within this library
  * Be aware that any of the refs of each string in each list is held within alloced_strings.
- * So if you manually free anything from here, you don't have to free each string ref because those will get cleaned up by free_all_structures().
+ * So if you manually free anything from here, you don't have to free each string ref because those will get cleaned up by free_all_structures_stringutils().
  * By default it starts out with max_size of 500, you can override this by calling user_init() at the start of the program
  * It will auto expand as needed, doubling its size every time to avoid O(n) spent allocating when limit is reached.
  * @param vectors: the list of refs to all the allocated lists of strings
  * @param contains: the current number of refs contained
  * @param max_size: the current max_size that the struct will hold
- * @see free_all_structures()
+ * @see free_all_structures_stringutils()
  * @see user_init()
  */
 typedef struct alloced_vects {
@@ -447,19 +447,19 @@ char* substr(char* orig, int start, int end);
 /**
  * @brief Allocates a generic void** pointer of size*count bytes. Size and count are given by the user.
  * <br>void** ptr = safe_alloc_generic(10, 2)
- * @warning <b>THIS DOES NOT GET FREED by free_all_structures(), it's up to the caller to free this memory</b>
+ * @warning <b>THIS DOES NOT GET FREED by free_all_structures_stringutils(), it's up to the caller to free this memory</b>
  * @param size
  * @param count
  * @return an allocated void** pointer of given size and count
- * @see free_all_structures()
+ * @see free_all_structures_stringutils()
  */
 void** safe_alloc_generic(size_t size, size_t count);
 
 /**
  * @brief Allocates a generic char* pointer of given size (size DOESN'T NEED to account for string terminator)
- * <br> This DOES get freed by free_all_structures(), so you don't need to manually free this memory if you call it
+ * <br> This DOES get freed by free_all_structures_stringutils(), so you don't need to manually free this memory if you call it
  * <br> char* str = alloc_safe_str(strlen("this is a test"))
- * @see free_all_structures()
+ * @see free_all_structures_stringutils()
  * @param size
  * @return allocated char* pointer
  */
@@ -472,7 +472,7 @@ char* alloc_safe_str(size_t size);
  * <br> Please do note that if this was compiled with GCC this function will be called automatically at program exit if possible.
  * <br> So make sure to know what you're doing if you call this manually!
  */
-void free_all_structures();
+void free_all_stringutils_structures();
 
 /**
  * @brief Exposes internal list of all currently allocated strings. Use with caution, as this has no guarantees.
@@ -506,13 +506,13 @@ void user_init(long long max_strings, long long max_vectors);
  * <br> func's prototype should be a void return with a single int argument
  * <br> In POSIX systems, exceptions triggered by this library will be SIGUSR1, on Windows however, it'll trigger SIGTERM, so be aware.
  * <br> If the trace level is on Warn, it'll also print some information, otherwise it'll be silent and just raise.
- * <br> The trace level can be set with set_trace_lvl()
+ * <br> The trace level can be set with set_trace_lvl_stringutils()
  * @param func (the function to call)
  * @see StringUtilsErrors
  * @see StringUtilsTraceLvl
- * @see set_trace_lvl()
+ * @see set_trace_lvl_stringutils()
  */
-void override_signal_exception(void (*func)(int));
+void override_signal_exception_stringutils(void (*func)(int));
 
 /**
  * @brief This function must be called in order to modify the trace level of the library.
@@ -520,7 +520,7 @@ void override_signal_exception(void (*func)(int));
  * @param trace_lvl (trace level to set, valid values are only NoTrace or Warn)
  * @see StringUtilsTraceLvl
  */
-void set_trace_lvl(StringUtilsTraceLvl trace_lvl);
+void set_trace_lvl_stringutils(StringUtilsTraceLvl trace_lvl);
 
 /**
  * @brief This function translates a StringUtilsErrors code into the appropriate message.
@@ -528,5 +528,5 @@ void set_trace_lvl(StringUtilsTraceLvl trace_lvl);
  * @return string (message)
  * @see StringUtilsErrors
  */
-char* errcodetostr(StringUtilsErrors err);
+char* errcodetostr_stringutils(StringUtilsErrors err);
 #endif //UTILS_STRINGUTILS_H
